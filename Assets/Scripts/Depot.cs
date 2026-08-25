@@ -10,13 +10,7 @@ public class Depot : Building
     {
         OnStart();
         menuController = MenuController.GetController();
-        menuController.vehicleButtonPressed += OnVehicleButton;
         name = "Depot";
-    }
-
-    void OnVehicleButton(GameObject prefab)
-    {
-       // TODO build vehicle 
     }
 
     public override void SetSelected(bool selected)
@@ -27,9 +21,11 @@ public class Depot : Building
             // Show vehicle menu
             menuController.ShowVehicleMenu();
         }
-        else
+        else 
         {
-            menuController.HideVehicleMenu();
-        }
+			// Show vehicle menu
+			menuController.HideVehicleMenu();
+		}
+            
     }
 }

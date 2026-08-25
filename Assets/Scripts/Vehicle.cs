@@ -3,6 +3,7 @@ using UnityEngine;
 using System.Collections.Generic;
 using System.Text;
 using JetBrains.Annotations;
+using Unity.VisualScripting;
 
 public enum VehicleAction
 {
@@ -15,6 +16,11 @@ public class VehicleOrder
 {
     public GameObject building; // Käskyn kohde
     public VehicleAction action; // Toiminta kohteessa
+
+    public bool IsSameAs(VehicleOrder other)
+    {
+        return (building == other.building && action == other.action);
+    }
 }
 
 /// <summary>
@@ -135,8 +141,22 @@ public class Vehicle : MonoBehaviour, ISelectable
         }
     }
 
-    public void AddOrder(VehicleOrder order)
+    /// <summary>
+    /// Add order to vehicle. Duplicate orders next to each other are not accepted
+    /// </summary>
+    /// <param name="order"></param>
+    /// <returns>True if order was added</returns>
+    public bool AddOrder(VehicleOrder order)
     {
+        if (orders.Count > 0)
+        {
+            VehicleOrder lastOrder = orders[orders.Count - 1];
+            if (lastOrder.IsSameAs(order))
+            {
+                return false;
+            }
+        }
+
         orders.Add(order);
         // Odota kunnes ajoneuvolla on vähintään kaksi
         // ohjetta ennen kuin niitä aletaan suorittaa
@@ -144,6 +164,7 @@ public class Vehicle : MonoBehaviour, ISelectable
         {
             activeOrderIndex = 0;
         }
+        return true;
     }
 
     public void ClearOrders()

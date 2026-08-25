@@ -44,7 +44,6 @@ public class MenuController : MonoBehaviour
     private GameObject ordersMenu;
     
     // Ajoneuvo jolle ollaan antamassa käskyjä
-    private Vehicle orderTarget = null;
     private TextMeshProUGUI orderText; // Ruudulla näkyvät käskyt
 
     // Erilaiset rakennukset joita voi rakentaa
@@ -73,8 +72,13 @@ public class MenuController : MonoBehaviour
         // samaan funktioon joka saa parametrina
         // napin nimen
         Button[] vehicleButtons =  vehicleMenu.GetComponentsInChildren<Button>();
+        if (vehicleButtons.Length == 0) { Debug.LogError("No vehicle buttons found"); }
         foreach (Button b in vehicleButtons)
         {
+#if DEBUG
+            Debug.Log($"Button found for {b.name}");
+#endif
+
             b.onClick.AddListener(() => OnVehicleButton(b.name));
         }
         Button[] buildingButtons =  buildingMenu.GetComponentsInChildren<Button>();
@@ -94,7 +98,7 @@ public class MenuController : MonoBehaviour
         
         // Aloita aina rakennusvalikosta:
         menuHistory = new Stack<MenuName>();
-        menuHistory.Push(MenuName.Building);
+        ShowMenu(MenuName.Building);
         // Piilota muut valikot
         HideMenu(MenuName.Vehicle);
         HideMenu(MenuName.Order);
@@ -109,6 +113,10 @@ public class MenuController : MonoBehaviour
         {
             vehicleButtonPressed?.Invoke(found);
         }
+        else
+        {
+            Debug.LogError($"No vehicle prefab found for {name}");
+        }
     }
 
     // Pelaaja valitsi rakennuksen
@@ -122,7 +130,11 @@ public class MenuController : MonoBehaviour
         {
             buildingButtonPressed?.Invoke(found);
         }
-    }
+		else
+		{
+			Debug.LogError($"No building prefab found for {name}");
+		}
+	}
 
     // Pelaaja painoi käskynappia; tutki kumpaa painettiin
     void OnOrderButton(string buttonName)
@@ -211,30 +223,21 @@ public class MenuController : MonoBehaviour
 
     public void ShowVehicleMenu()
     {
-        HideTopMenu();
-        menuHistory.Push(MenuName.Vehicle);
-        ShowTopMenu();
+        ShowMenu(MenuName.Vehicle);
     }
 
     public void HideVehicleMenu()
     {
         HideMenu(MenuName.Vehicle);
-        menuHistory.Pop();
-        ShowTopMenu();
     }
 
     public void ShowOrdersMenu(Vehicle target)
     {
-        orderTarget = target;
-        HideTopMenu();
-        menuHistory.Push(MenuName.Order);
-        ShowTopMenu();
+        ShowMenu(MenuName.Order);
     }
     public void HideOrdersMenu()
     {
         HideMenu(MenuName.Order);
-        menuHistory.Pop();
-        ShowTopMenu();
     }
 
     public void SetOrderListText(string text)

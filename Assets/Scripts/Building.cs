@@ -23,8 +23,29 @@ public class Building : MonoBehaviour, ISelectable
     protected string resourceInfo;
     protected string inventoryInfo;
 
+    // Rakennuksen vaikutusalue jos on
+    protected GameObject? AreaIndicator;
+
     protected void OnStart()
     {
+        Transform AreaTrans = gameObject.transform.Find("Area");
+        if (AreaTrans)
+        {
+            AreaIndicator = AreaTrans.gameObject;
+        }
+        else
+        {
+            AreaIndicator = null;
+        }
+            SphereCollider coll = GetComponentInChildren<SphereCollider>();
+		if (AreaIndicator && coll)
+		{
+			AreaIndicator.transform.localScale = Vector3.one * (coll.radius * 2.0f);
+		}
+		if (AreaIndicator)
+        {
+            AreaIndicator.SetActive(false);
+        }
         buildingName = gameObject.name;
         resources = new Dictionary<ResourceType, float>(); 
         StringBuilder sb = new StringBuilder();
@@ -43,7 +64,7 @@ public class Building : MonoBehaviour, ISelectable
         }
         foreach (ResourceType type in Outputs)
         {
-            sb.Append($"<out {type}\n");
+            sb.Append($"{type} > out\n");
             if (resources.ContainsKey(type) == false)
             {
                 resources.Add(type, 0);
@@ -59,7 +80,7 @@ public class Building : MonoBehaviour, ISelectable
         StringBuilder sb = new StringBuilder();
         foreach (ResourceType type in resources.Keys)
         {
-            sb.Append($"[{ type }]:{resources[type]} ");
+            sb.Append($"[{ type }]:{(int)resources[type]} ");
         }
         inventoryInfo = sb.ToString();
     }
@@ -67,7 +88,17 @@ public class Building : MonoBehaviour, ISelectable
     public virtual void SetSelected(bool selected)
     {
         isSelected = selected;
+        if (AreaIndicator)
+        {
+            AreaIndicator.SetActive(selected);
+        }
     }
+
+    // This is called when the building is placed on the map
+    public virtual void OnConstructionComplete()
+    {
+        // Nop
+    }    
 
     // Apufunktiot resurssien käsittelyyn
     public bool IsProducing(ResourceType type)
@@ -151,7 +182,7 @@ public class Building : MonoBehaviour, ISelectable
         string text = buildingName;
         if (isSelected)
         {
-            text = $"[{ buildingName }]";
+            text = $"[ {buildingName } ]";
         }  
         
         // Ota Label elementin oletustyyli ja vaihda sen teksti isommaksi
