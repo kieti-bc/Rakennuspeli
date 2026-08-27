@@ -27,12 +27,6 @@ public class Resource : MonoBehaviour
         resourceType = product;
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
-
     private void OnGUI()
     {
         Vector3 textpos = Camera.main.WorldToScreenPoint(transform.position + Vector3.up * 1);

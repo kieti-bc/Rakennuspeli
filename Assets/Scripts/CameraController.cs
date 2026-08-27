@@ -17,7 +17,7 @@ public class CameraController : MonoBehaviour
 
     // Viite rakentamiskoodiin
     BuildingLogic buildingLogic;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
     void Start()
     {
         buildingLogic = GetComponent<BuildingLogic>();
@@ -29,7 +29,6 @@ public class CameraController : MonoBehaviour
 
     }
 
-    // Update is called once per frame
     void Update()
     {
         transform.position = transform.position + new Vector3(moveVector.x, 0.0f, moveVector.y) * moveSpeed * Time.deltaTime;
@@ -45,18 +44,9 @@ public class CameraController : MonoBehaviour
 
     public void DoZoom(float scrollDelta)
     {
-        if (scrollDelta != 0.0f)
-        {
-            Debug.Log($"Scroll {scrollDelta}");
-        }
-        // Jos ei olla antamassa käskyjä, zoomaa näkymää
-        
-            // Laske muutos rullan asennossa
-           
-            // Laske uusi zoom ja aseta se 
-            float newFov = Camera.main.fieldOfView + scrollDelta * fovDegreesPerZoom;
-            // Rajoita 25-70 välille
-            Camera.main.fieldOfView = Math.Clamp(newFov, 25, 70);
-        
+        // Laske uusi zoom ja aseta se 
+        float newFov = Camera.main.fieldOfView + scrollDelta * fovDegreesPerZoom;
+        // Rajoita 25-70 välille
+        Camera.main.fieldOfView = Math.Clamp(newFov, 25, 70);
     }
 }

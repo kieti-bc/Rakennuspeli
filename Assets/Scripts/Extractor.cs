@@ -11,7 +11,7 @@ public class Extractor : Building
     
     void Start()
     {
-        OnStart(); // Building luokan Start
+        base.OnStart(); // Building luokan Start
         name = "Extractor";
         debugInfo = "Not Extracting";
     }

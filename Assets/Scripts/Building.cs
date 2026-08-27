@@ -2,20 +2,25 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+
 /// <summary>
+/// Tämä on kaikkien rakennusten abstracti yläluokka
+/// 
 /// Rakennukset tuottavat ja kuluttavat resursseja
 /// sekä säilövät niitä inventaariossaan
-/// Rakennukset voi valita.
+/// 
+/// Rakennukset voi valita ISelectable rajapinnan kautta.
 /// </summary>
-public class Building : MonoBehaviour, ISelectable
+public abstract class Building : MonoBehaviour, ISelectable
 {
+    // Onko rakennus tällä hetkellä valittuna
     bool isSelected = false;
 
     // Mitä rakennus tuottaa ja kuluttaa ja mitä
     // sillä on varastossaan
     [SerializeField] protected List<ResourceType> Inputs;
     [SerializeField] protected List<ResourceType> Outputs;
-    [SerializeField] protected Dictionary<ResourceType, float> resources;
+    [SerializeField] protected Dictionary<ResourceType, float> storedResources;
     
     // Ruudulla näkyvät tiedot rakennuksesta
     protected string buildingName;
@@ -23,11 +28,12 @@ public class Building : MonoBehaviour, ISelectable
     protected string resourceInfo;
     protected string inventoryInfo;
 
-    // Rakennuksen vaikutusalue jos on
-    protected GameObject? AreaIndicator;
+    // Rakennuksen vaikutusalue jos on. Voi olla myös null
+    protected GameObject AreaIndicator = null;
 
     protected void OnStart()
     {
+        // Etsi mahdollinen vaikutusalueen objekti
         Transform AreaTrans = gameObject.transform.Find("Area");
         if (AreaTrans)
         {
@@ -37,7 +43,10 @@ public class Building : MonoBehaviour, ISelectable
         {
             AreaIndicator = null;
         }
-            SphereCollider coll = GetComponentInChildren<SphereCollider>();
+
+        // Jos vaikutusalue on olemassa, tee siitä samankokoinen kuin
+        // Spherecolliderista
+        SphereCollider coll = GetComponentInChildren<SphereCollider>();
 		if (AreaIndicator && coll)
 		{
 			AreaIndicator.transform.localScale = Vector3.one * (coll.radius * 2.0f);
@@ -46,8 +55,12 @@ public class Building : MonoBehaviour, ISelectable
         {
             AreaIndicator.SetActive(false);
         }
+
+        
         buildingName = gameObject.name;
-        resources = new Dictionary<ResourceType, float>(); 
+
+        // Luo resurssien sanakirja : Resurssin tyyppi -> Määrä varastossa
+        storedResources = new Dictionary<ResourceType, float>(); 
         StringBuilder sb = new StringBuilder();
         
         // Lisää kaikki tuotetut ja kulutettavat resurssit
@@ -57,17 +70,17 @@ public class Building : MonoBehaviour, ISelectable
             sb.Append($"in > {type}\n");
             // Jos resurssia ei vielä ole inventaariossa
             // lisää se sinne ja laita määräksi 0
-            if (resources.ContainsKey(type) == false)
+            if (storedResources.ContainsKey(type) == false)
             {
-                resources.Add(type, 0);
+                storedResources.Add(type, 0);
             }
         }
         foreach (ResourceType type in Outputs)
         {
             sb.Append($"{type} > out\n");
-            if (resources.ContainsKey(type) == false)
+            if (storedResources.ContainsKey(type) == false)
             {
-                resources.Add(type, 0);
+                storedResources.Add(type, 0);
             }
         }
         resourceInfo = sb.ToString();
@@ -78,13 +91,14 @@ public class Building : MonoBehaviour, ISelectable
     void UpdateInventory()
     {
         StringBuilder sb = new StringBuilder();
-        foreach (ResourceType type in resources.Keys)
+        foreach (ResourceType type in storedResources.Keys)
         {
-            sb.Append($"[{ type }]:{(int)resources[type]} ");
+            sb.Append($"[{ type }]:{(int)storedResources[type]} ");
         }
         inventoryInfo = sb.ToString();
     }
     
+    // Tätä kutsutaan kun rakennus valitaan
     public virtual void SetSelected(bool selected)
     {
         isSelected = selected;
@@ -94,7 +108,7 @@ public class Building : MonoBehaviour, ISelectable
         }
     }
 
-    // This is called when the building is placed on the map
+    // Tätä kutsutaan kun rakennus laitetaan kartalle.
     public virtual void OnConstructionComplete()
     {
         // Nop
@@ -144,7 +158,7 @@ public class Building : MonoBehaviour, ISelectable
     {
         if (amount > 0)
         {
-            resources[type] += amount;
+            storedResources[type] += amount;
             UpdateInventory();
         }
     }
@@ -165,10 +179,10 @@ public class Building : MonoBehaviour, ISelectable
     /// <returns>Kuinka paljon annettiin</returns>
     public float Take(ResourceType type, float amount)
     {
-        if (amount > 0 && IsProducing(type) && resources[type] > 1.0f)
+        if (amount > 0 && IsProducing(type) && storedResources[type] > 1.0f)
         {
-            float amountTaken = Math.Min(amount, resources[type]);
-            resources[type] -= amountTaken;
+            float amountTaken = Math.Min(amount, storedResources[type]);
+            storedResources[type] -= amountTaken;
             UpdateInventory();
             return amountTaken;
         }
@@ -176,6 +190,7 @@ public class Building : MonoBehaviour, ISelectable
         return 0;
     }
     
+    // Näyttää rakennuksen tiedot
     private void OnGUI()
     {
         Vector3 textpos = Camera.main.WorldToScreenPoint(transform.position + Vector3.up * 1);

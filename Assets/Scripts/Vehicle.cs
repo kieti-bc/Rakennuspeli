@@ -142,7 +142,7 @@ public class Vehicle : MonoBehaviour, ISelectable
     }
 
     /// <summary>
-    /// Add order to vehicle. Duplicate orders next to each other are not accepted
+    /// Lisää käsky. Sama käsky ei voi olla peräkkäin.
     /// </summary>
     /// <param name="order"></param>
     /// <returns>True if order was added</returns>

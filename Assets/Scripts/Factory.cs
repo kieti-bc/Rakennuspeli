@@ -17,7 +17,7 @@ public class Factory : Building
     void Update()
     {
         // TODO 
-        // tuota tavaroita jos kaikkia resursseja
+        // tuota output listan resursseja jos kaikkia resursseja
         // on saatavilla
     }
 }

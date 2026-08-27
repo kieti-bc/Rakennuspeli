@@ -1,11 +1,12 @@
 using UnityEngine;
 /// <summary>
 /// Tämä rakennus rakentaa ajoneuvoja
+/// ja määrittää milloin ajoneuvovalikko näkyy ruudulla
 /// </summary>
 public class Depot : Building
 {
     private MenuController menuController;
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+
     void Start()
     {
         OnStart();
@@ -26,6 +27,5 @@ public class Depot : Building
 			// Show vehicle menu
 			menuController.HideVehicleMenu();
 		}
-            
     }
 }

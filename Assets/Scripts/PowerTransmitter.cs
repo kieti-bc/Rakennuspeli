@@ -9,14 +9,16 @@ using static UnityEngine.GraphicsBuffer;
 /// eteenpäin yhdelle tai useammalla rakennukselle joka
 /// kuluttaa sitä.
 /// Se välittää sähköä myös muille sähköpylväille
+/// 
+/// Tässä luokassa on vaikeaa logiikkaa.
 /// </summary>
 public class PowerTransmitter : Building
 {
     [SerializeField] Sprite powered;
     [SerializeField] Sprite unpowered;
     SpriteRenderer spriteRenderer;
-    [SerializeField] GameObject powerlinePrefab;
     
+    // Kuinka nopeasti sähkö liikkuu
     [SerializeField] float transferRate;
     
     // Mistä sähkö tulee
@@ -24,7 +26,10 @@ public class PowerTransmitter : Building
     
     // Mihin sähkö menee
     [SerializeField] private List<Building> outputs;
-    private Dictionary<Building, GameObject> powerlinesToOutputs;
+
+	// Sähkön liikkeen visualisointi
+	[SerializeField] GameObject powerlinePrefab;
+	private Dictionary<Building, GameObject> powerlinesToOutputs;
     private GameObject inputPowerline;
 
     // Tässä listassa on rakennuksia jotka on havaittu triggerillä
@@ -35,14 +40,15 @@ public class PowerTransmitter : Building
     // it exists to avoid spawning extra powerlines
     static GameObject g_previewPowerline = null;
     
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        OnStart();
+        base.OnStart();
         spriteRenderer = GetComponentInChildren<SpriteRenderer>();
         input = null;
         outputs = new List<Building>();
-        resources.Add(ResourceType.Power, 0);
+        storedResources.Add(ResourceType.Power, 0);
+
+        // Kaikilla on yksi yhteinen preview powerline
         if (g_previewPowerline == null)
         {
             g_previewPowerline = GameObject.Instantiate(powerlinePrefab);
@@ -50,10 +56,8 @@ public class PowerTransmitter : Building
         }
         powerlinesToOutputs = new Dictionary<Building, GameObject>();
         possibleOutputs = new List<Building>();
-
 	}
 
-    // Update is called once per frame
     void Update()
     {
         debugInfo = "";
@@ -126,9 +130,11 @@ public class PowerTransmitter : Building
 				return ConnectionType.Output;
             }
         }
+        // Tähän rakennukseen ei voi yhdistää
         return ConnectionType.None;
     }
 
+    // Osoita powerline kohti rakennusta
     void ConnectPowerLineTo(GameObject powerline, Building target)
     {
 		Vector3 sourcePos = this.transform.position + Vector3.up;
@@ -165,14 +171,14 @@ public class PowerTransmitter : Building
 
 	public override void OnConstructionComplete()
 	{
-        // Add powerline to input
+        // Luo powerline sinne mistä sähkö tulee
         if (inputPowerline == null)
         {
 			inputPowerline = GameObject.Instantiate(powerlinePrefab, transform);
 			ConnectPowerLineTo(inputPowerline, input);
 		}
 
-		// Add powerlines to any new outputs
+		// Luo powerlinet sinne mihin sähkö menee
         foreach (Building b in possibleOutputs)
         {
 			// Tarkista että ei ole vielä yhdistetty

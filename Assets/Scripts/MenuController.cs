@@ -28,10 +28,6 @@ public class MenuController : MonoBehaviour
         GotoOrder,
         ClearOrders
     }
-
-    // Pinorakenteen avulla voidaan muistaa missä
-    // valikossa oltiin viimeksi
-    private Stack<MenuName> menuHistory;
     
     // Julkinen, staattinen funktio jonka avulla
     // muut luokat saavat helposti viitteen tähän olioon
@@ -97,7 +93,6 @@ public class MenuController : MonoBehaviour
         orderText = orderList.GetComponent<TextMeshProUGUI>();
         
         // Aloita aina rakennusvalikosta:
-        menuHistory = new Stack<MenuName>();
         ShowMenu(MenuName.Building);
         // Piilota muut valikot
         HideMenu(MenuName.Vehicle);
@@ -107,7 +102,6 @@ public class MenuController : MonoBehaviour
     // Pelaaja valitsi ajoneuvon
     void OnVehicleButton(string name)
     {
-        Debug.Log($"Clicked vehicle button for {name}");
         GameObject found = Array.Find(unitPrefabs, unit => unit.name == name);
         if (found != null)
         {
@@ -122,7 +116,6 @@ public class MenuController : MonoBehaviour
     // Pelaaja valitsi rakennuksen
     void OnBuildingButton(string name)
     {
-        Debug.Log($"Clicked building button for {name}");
         // Etsi samanniminen prefab rakennus
         GameObject found = Array.Find(unitPrefabs, unit => unit.name == name);
         // Lähetä tapahtuma vain jos prefab löytyi
@@ -139,7 +132,6 @@ public class MenuController : MonoBehaviour
     // Pelaaja painoi käskynappia; tutki kumpaa painettiin
     void OnOrderButton(string buttonName)
     {
-        Debug.Log("MenuController on Order Button " + buttonName);
         if (buttonName == "GoTo")
         {
             orderButtonPressed?.Invoke(OrderButtonType.GotoOrder);
@@ -163,34 +155,6 @@ public class MenuController : MonoBehaviour
             case MenuName.Vehicle:
                 vehicleMenu.SetActive(false);
                 break;
-        }
-    }
-
-    // Näytä pinon päällimmäinen valikko
-    // Jos sitä ei ole, näytä rakennusvalikko
-    private void ShowTopMenu()
-    {
-        MenuName topMenu;
-        if (menuHistory.TryPeek(out topMenu))
-        {
-            ShowMenu(topMenu); 
-        }
-        else
-        {
-            // History is empty: put Building menu
-            ShowMenu(MenuName.Building);
-            menuHistory.Push(MenuName.Building);
-        }
-    }
-
-    // Piilota aktiivinen valikko
-    void HideTopMenu()
-    {
-        MenuName topMenu;
-        // Piilota vain jos pinossa on jotain
-        if (menuHistory.TryPeek(out topMenu))
-        {
-            HideMenu(topMenu);
         }
     }
 
